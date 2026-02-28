@@ -136,7 +136,18 @@ python pressingClicks.py
 
 ## Legacy Version (terminal)
 
-The original terminal-based version is preserved in the [`legacy`](https://github.com/mangobax/pressingClicks/tree/legacy) branch. It has no GUI — all configuration is done via console prompts.
+The terminal-based version (v1.1) is preserved in the [`legacy`](https://github.com/mangobax/pressingClicks/tree/legacy) branch. It has no GUI — all configuration is done via console prompts on launch.
+
+**Features:**
+- Console prompts for delay, interval, and loop count
+- Left & right click recording (middle click to stop)
+- Click & drag support — auto-detected from cursor movement
+- Save and load routines as JSON
+- Slight position randomisation during playback
+- Customisable play/pause and exit hotkeys (`F12` / `Esc` by default)
+- DPI-aware — fixes coordinate offset on scaled displays
+
+**Known limitations:** no GUI, no per-click timing capture, no timeline view.
 
 ```bash
 git clone --branch legacy https://github.com/mangobax/pressingClicks.git pressingClicks-legacy
@@ -145,11 +156,7 @@ pip install pynput
 python pressingClicks.py
 ```
 
-**Legacy features:**
-- Console prompts for delay, interval, and loop count
-- Left click recording only (middle click to stop)
-- `F12` to play/pause, `Esc` to exit
-- Save / load routines as JSON
+See the [legacy branch README](https://github.com/mangobax/pressingClicks/blob/legacy/README.md) for full usage instructions.
 
 ---
 
