@@ -1,35 +1,140 @@
 # pressingClicks
-This is a program to press clicks given an input routine and loops through.
 
-* Download the latest release of [pressingClicks.exe](https://github.com/marcoagbarreto/pressingClicks/releases/download/v0.1.2/pressingClicks.exe)
+A GUI-based mouse macro recorder and player. Record sequences of clicks and drags, save them as reusable routines, and play them back with human-like randomisation.
 
-## Example
+---
 
-1. Run ```pressingClicks.exe``` or ```pressingClicks.py```
-2. Input delay and intervals for clicks and routines.
-3. Start clicking the routine actions. Once done click the middle button to save.
-4. Make focus on the desired app.
-5. Press ```[F12]``` to run the program.
-6. Profit.
-7. Restart the program with ```[Esc]```
+## Features
 
-![example](example.gif)
+- **Tkinter GUI**  no terminal interaction required
+- **Click & drag recording**  automatically detects drags based on cursor movement
+- **Real-time timing capture**  inter-event delays are recorded as you perform them
+- **Per-event delay control**  choose between recorded timings or a fixed settings delay
+- **Adjustable randomness**  slider from 0 (exact) to 1 (maximum jitter) on position and timing
+- **Left & right click support**
+- **Save / Load routines** as JSON files
+- **Macro timeline**  live-updating table showing every recorded event; right-click to delete individual rows
+- **Customisable hotkeys**  set play/pause and stop-recording keys by typing or pressing the key directly
+- **Always on Top** toggle
+- **DPI-aware**  coordinates are accurate on high-DPI / scaled displays
 
-## Code Usage
+---
 
-Clone the repository (no installation required, source files are sufficient):
-        
-    https://github.com/marcoagbarreto/pressingClicks.git
+## Requirements
 
-dependencies:
+- Python 3.8+
+- [`pynput`](https://pypi.org/project/pynput/)
 
-    import os
-    import time
-    import random
-    import pynput 
-    import threading
+Install the dependency:
 
-or [download and extract the zip](https://github.com/marcoagbarreto/pressingClicks/archive/main.zip) into your project folder.
+```bash
+pip install pynput
+```
 
-## Known limitations:
-* Only left clicks are possible at the moment
+---
+
+## Running
+
+```bash
+python pressingClicks.py
+```
+
+---
+
+## How to Use
+
+### 1. Configure Settings
+
+| Field | Description |
+|---|---|
+| **Click Delay (s)** | Fallback delay between clicks when using *Settings* delay mode |
+| **Delay Mode** | *Recorded* uses captured timings; *Settings* uses the fixed delay above |
+| **Routine Interval (s)** | Wait between full routine loops |
+| **Max Loops** | Number of times to repeat the routine (0 = infinite) |
+| **Randomness** | Slider controlling position and timing jitter (0 = none, 1 = max) |
+| **Play/Pause Key** | Keyboard hotkey to start or pause playback |
+| **Stop Record Key** | Key (or `middle` for middle mouse click) to stop recording |
+
+Click **Apply Hotkeys** after changing any hotkey. Use the **** button next to a field to capture a key by pressing it directly.
+
+### 2. Record a Routine
+
+1. Click ** Record**  the window minimises automatically.
+2. Perform your clicks and drags on screen. Each action is captured with its real timing.
+3. Stop recording by pressing the configured **Stop Record Key** (default: middle mouse click). The window restores and the timeline fills in.
+
+> **Drag detection:** if the cursor moves more than 5 px between press and release, the event is recorded as a drag with a start point, end point, and duration.
+
+### 3. Review the Timeline
+
+The **Macro Timeline** table shows every recorded event:
+
+| Column | Meaning |
+|---|---|
+| Index | Order of execution |
+| Type | `click` or `drag` |
+| Button | `left` or `right` |
+| X / Y | Start coordinates |
+| End X / End Y | End coordinates (drags only) |
+| Delay (s) | Time waited before this event |
+| Duration (s) | How long the button was held (drags only) |
+
+Right-click any row to delete it. Click **Clear** to remove all events.
+
+### 4. Play Back
+
+- Click ** Play** or press the configured play/pause hotkey.
+- The routine loops according to **Max Loops** (0 = forever).
+- Press the hotkey again or click ** Pause** to pause.
+- Press **Esc** at any time to close the program.
+
+### 5. Save & Load Routines
+
+- **Save Routine**  exports the current event list to a `.json` file.
+- **Load Routine**  imports a previously saved `.json` file. Old routines recorded with version 1 are backwards-compatible.
+
+---
+
+## Keyboard Shortcuts
+
+| Key | Action |
+|---|---|
+| Configured play/pause key (default `f9`) | Toggle play / pause |
+| Configured stop-record key (default middle click) | Stop recording |
+| `Esc` | Exit the program |
+
+---
+
+## Routine JSON Format
+
+Routines are plain JSON arrays. Each event is an object:
+
+```json
+[
+  { "type": "click", "button": "left",  "x": 540, "y": 360, "delay": 0.412 },
+  { "type": "drag",  "button": "left",  "x": 100, "y": 200,
+    "end_x": 400, "end_y": 200, "duration": 0.35, "delay": 0.8 }
+]
+```
+
+You can edit these files manually to fine-tune timings or coordinates.
+
+---
+
+## Clone & Run
+
+```bash
+git clone https://github.com/mangobax/pressingClicks.git
+cd pressingClicks
+pip install pynput
+python pressingClicks.py
+```
+
+---
+
+## License
+
+[![License: CC BY-NC 4.0](https://licensebuttons.net/l/by-nc/4.0/88x31.png)](https://creativecommons.org/licenses/by-nc/4.0/)
+
+This project is licensed under the [Creative Commons Attribution-NonCommercial 4.0 International](https://creativecommons.org/licenses/by-nc/4.0/) license.  
+Free to share and adapt — **non-commercial use only**.
