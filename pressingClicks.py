@@ -7,17 +7,32 @@ Version: 28-Feb-2026
 Features:
 - Save / Load routines (JSON)
 - Left & Right click support
+- Click & drag support (auto-detected)
 - Customizable hotkeys
 - Routine loop limit
+- DPI-aware coordinate recording
 """
 
 import sys
 import json
+import ctypes
 import threading
-from time import sleep
+from time import sleep, time
 from random import uniform
 from pynput.mouse import Controller, Button, Listener as MouseListener
 from pynput.keyboard import Key, Listener as KeyboardListener
+
+# ==============================
+# DPI Awareness (Windows)
+# ==============================
+if sys.platform == "win32":
+    try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(2)
+    except Exception:
+        try:
+            ctypes.windll.user32.SetProcessDPIAware()
+        except Exception:
+            pass
 
 
 # ==============================
@@ -101,6 +116,27 @@ class ClickPlayer(threading.Thread):
 
         sleep(randomize(self.delay))
 
+    def perform_drag(self, click_data):
+        x1 = int(randomize(click_data["x"]))
+        y1 = int(randomize(click_data["y"]))
+        x2 = int(randomize(click_data["end_x"]))
+        y2 = int(randomize(click_data["end_y"]))
+        button = Button.left if click_data["button"] == "left" else Button.right
+        duration = float(click_data.get("duration", 0.3))
+        steps = max(10, int(duration * 60))
+
+        self.mouse.position = (x1, y1)
+        self.mouse.press(button)
+        for i in range(steps + 1):
+            if not self._running.is_set():
+                break
+            t = i / steps
+            self.mouse.position = (int(x1 + (x2 - x1) * t), int(y1 + (y2 - y1) * t))
+            sleep(duration / steps)
+        self.mouse.release(button)
+
+        sleep(randomize(self.delay))
+
     def run(self):
         while self._alive:
             self._running.wait()
@@ -113,7 +149,10 @@ class ClickPlayer(threading.Thread):
             for click in self.clicks:
                 if not self._running.is_set():
                     break
-                self.perform_click(click)
+                if click.get("type") == "drag":
+                    self.perform_drag(click)
+                else:
+                    self.perform_click(click)
 
             self.loop_count += 1
             sleep(randomize(self.interval))
@@ -134,25 +173,50 @@ class ClickPlayer(threading.Thread):
 # ==============================
 # Recording
 # ==============================
+DRAG_THRESHOLD_PX = 5
+
 def record_clicks():
     recorded = []
+    press_info = {}  # Button -> (x, y, timestamp)
 
     def on_click(x, y, button, pressed):
-        if button == Button.middle:
+        if button == Button.middle and pressed:
             print("Recording stopped.")
             return False
 
-        if pressed and button in (Button.left, Button.right):
-            click_type = "left" if button == Button.left else "right"
-            print(f"Recorded {click_type} at ({x}, {y})")
-            recorded.append({
-                "x": x,
-                "y": y,
-                "button": click_type
-            })
+        if button not in (Button.left, Button.right):
+            return
+
+        btn_str = "left" if button == Button.left else "right"
+
+        if pressed:
+            press_info[button] = (x, y, time())
+        else:
+            if button not in press_info:
+                return
+            px, py, press_time = press_info.pop(button)
+            duration = time() - press_time
+            dx, dy = abs(x - px), abs(y - py)
+
+            if dx > DRAG_THRESHOLD_PX or dy > DRAG_THRESHOLD_PX:
+                print(f"Recorded {btn_str} drag ({px},{py}) -> ({x},{y})")
+                recorded.append({
+                    "type": "drag",
+                    "button": btn_str,
+                    "x": px, "y": py,
+                    "end_x": x, "end_y": y,
+                    "duration": round(duration, 3),
+                })
+            else:
+                print(f"Recorded {btn_str} click at ({px}, {py})")
+                recorded.append({
+                    "type": "click",
+                    "button": btn_str,
+                    "x": px, "y": py,
+                })
 
     print("Recording clicks...")
-    print("Left/Right Click = Record | Middle Click = Stop")
+    print("Left/Right Click = Record | Drag = Record drag | Middle Click = Stop")
 
     with MouseListener(on_click=on_click) as listener:
         listener.join()
