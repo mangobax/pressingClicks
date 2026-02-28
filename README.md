@@ -2,6 +2,8 @@
 
 A GUI-based mouse macro recorder and player. Record sequences of clicks and drags, save them as reusable routines, and play them back with human-like randomisation.
 
+> **Looking for the original terminal version?** See the [`legacy`](https://github.com/mangobax/pressingClicks/tree/legacy) branch.
+
 ---
 
 ## Features
@@ -129,6 +131,25 @@ cd pressingClicks
 pip install pynput
 python pressingClicks.py
 ```
+
+---
+
+## Legacy Version (terminal)
+
+The original terminal-based version is preserved in the [`legacy`](https://github.com/mangobax/pressingClicks/tree/legacy) branch. It has no GUI — all configuration is done via console prompts.
+
+```bash
+git clone --branch legacy https://github.com/mangobax/pressingClicks.git pressingClicks-legacy
+cd pressingClicks-legacy
+pip install pynput
+python pressingClicks.py
+```
+
+**Legacy features:**
+- Console prompts for delay, interval, and loop count
+- Left click recording only (middle click to stop)
+- `F12` to play/pause, `Esc` to exit
+- Save / load routines as JSON
 
 ---
 
